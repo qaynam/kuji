@@ -11,6 +11,103 @@ const io = new Server(server);
 let kujiQueryData: Array<RoomType> = [];
 
 
+/**
+ * >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ * 
+ *              
+ *                  Utility functions
+ * 
+ * 
+ * >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ */
+
+//期間内にランダムな数字を出す関数
+const randRange = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min);
+ 
+function createRoom(roomField:CreateRoomRequestBodyType) {
+    const room: RoomType = {
+        id: v4(),
+        ...roomField,
+        users: []
+    }
+
+    kujiQueryData.push(room);
+
+    return "/room/" + room.id
+}
+
+//ルームを抽出する関数
+function findRoom(roomId:string ) {
+    const room = kujiQueryData.find(room => room.id === roomId)
+    if(room) return {...room, count: Number(room.count), winnerCount: Number(room.winnerCount)};
+
+    return false;
+}
+
+//当たりの人のindexを出す関数
+function generateUniqueIndexNumber(winnerList:Array<number>, count: number, winnerIndexDefault?: number): number {
+
+    let winnerIndex = winnerIndexDefault || randRange(1, count);
+
+    if(winnerList.includes(winnerIndex)) {
+        winnerIndex = randRange(1, count);
+        
+        return generateUniqueIndexNumber(winnerList, count, winnerIndex);
+    } else {
+        return winnerIndex
+    }
+}
+
+//当たり外れを作成関数
+function execWinner(room: RoomType): RoomUsers {
+
+    let winnerList: Array<number> = [];
+
+    for (let index:number = 0; index < room.winnerCount; index++) {
+        let winnerIndex = generateUniqueIndexNumber(winnerList, room.count);
+        winnerList.push(winnerIndex);
+    }
+
+    console.log(winnerList);
+    console.log(room.winnerCount);
+
+    room.users.forEach((user: RoomUserType,index: number) => {
+        if(winnerList.includes(index + 1)){
+            user.status = "win";
+        } else {
+            user.status = "lose";
+        }
+    })
+
+    return room.users;
+}
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ * 
+ *              
+ *                  express logic
+ * 
+ * 
+ * >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ */
+
+
+
 app.use(express.static(__dirname + "/../public"));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
@@ -68,6 +165,25 @@ app.post('/room/:roomId/add-user', (req: Request, res: Response) => {
 
 
 
+
+
+
+
+
+
+
+/**
+ * >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ * 
+ *              
+ *                  websocket logic
+ * 
+ * 
+ * >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ */
+
+
+
 io.on('connection', (socket) => {
     console.log("a user conneted");
 
@@ -92,62 +208,10 @@ io.on('connection', (socket) => {
     })
 })
 
+
+
+
+
+//start server
 server.listen(3000, () => console.log("app is running port http://localhost:3000 🎇"));
 
-
-function createRoom(roomField:CreateRoomRequestBodyType) {
-    const room: RoomType = {
-        id: v4(),
-        ...roomField,
-        users: []
-    }
-
-    kujiQueryData.push(room);
-
-    return "/room/" + room.id
-}
-
-function findRoom(roomId:string ) {
-    const room = kujiQueryData.find(room => room.id === roomId)
-    if(room) return {...room, count: Number(room.count), winnerCount: Number(room.winnerCount)};
-
-    return false;
-}
-
-function execWinner(room: RoomType): RoomUsers {
-
-    let winnerList: Array<number> = [];
-
-    for (let index:number = 0; index < room.winnerCount; index++) {
-        let winnerIndex = generateUniqueIndexNumber(winnerList, room.count);
-        winnerList.push(winnerIndex);
-    }
-
-    console.log(winnerList);
-    console.log(room.winnerCount);
-
-    room.users.forEach((user: RoomUserType,index: number) => {
-        if(winnerList.includes(index + 1)){
-            user.status = "win";
-        } else {
-            user.status = "lose";
-        }
-    })
-
-    return room.users;
-}
-
-const randRange = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min);
-
-function generateUniqueIndexNumber(winnerList:Array<number>, count: number, winnerIndexDefault?: number): number {
-
-    let winnerIndex = winnerIndexDefault || randRange(1, count);
-
-    if(winnerList.includes(winnerIndex)) {
-        winnerIndex = randRange(1, count);
-        
-        return generateUniqueIndexNumber(winnerList, count, winnerIndex);
-    } else {
-        return winnerIndex
-    }
-}
