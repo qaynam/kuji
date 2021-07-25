@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>くじ引きアプリ</title>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="h-screen bg-gray-200">
+    <div class="container mx-auto px-3 mt-10">
+        <form onsubmit="false;">
+            <div class="text-center">
+                <label for="gameName" class="block font-semibold mb-2 text-lg">くじの名前</label>
+                <input type="text" placeholder="" id="gameName" class="border p-3">
+            </div>
+            <hr class="border-gray-400 my-10">
+            <div class="text-center mb-10">
+                <label for="count" class="block mb-2 font-medium">くじの数</label>
+                <input type="number" min="1" id="count" class="p-3">
+            </div>
+            <div class="text-center mb-10">
+                <label for="winnerCount" class="block mb-2 font-medium">当たり数</label>
+                <input type="number" min="1" id="winnerCount" class="p-3">
+            </div>
+            <div class="text-center">
+                <button type="button" id="submitBtn" class="py-3 px-10 bg-blue-500 text-white">確定</button>
+            </div>
+        </form>
+        <div id="urlBar" class="hidden bg-green-400 text-white rounded p-3 mt-5"></div>
+    </div>
+
+    <script src="./assets/top.js" type="module"></script>
+</body>
+
+</html>
