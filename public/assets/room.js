@@ -1,5 +1,3 @@
-// import socket from "./socket.js";
-
 const title = document.querySelector("title");
 const pageTopSection = document.querySelector(".top");
 const userNameInput = pageTopSection.querySelector("input");
